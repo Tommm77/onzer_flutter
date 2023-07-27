@@ -11,6 +11,7 @@ class FirestoreHelper {
   final storage = FirebaseStorage.instance;
   final cloudUsers = FirebaseFirestore.instance.collection('users');
   final cloudMusics = FirebaseFirestore.instance.collection('musics');
+  final int = 1;
 
   List<MyMusic> Musics = [
     MyMusic.build(
