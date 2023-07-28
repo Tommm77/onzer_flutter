@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/controller/background_controller.dart';
 import 'package:flutter_application_1/controller/firestore_helper.dart';
 import 'package:flutter_application_1/global.dart';
+import 'package:flutter_application_1/model/user.dart';
 
 class MyMessagerie extends StatefulWidget {
-  const MyMessagerie({super.key});
+  const MyMessagerie({Key? key}) : super(key: key);
 
   @override
   State<MyMessagerie> createState() => _MyMessagerieState();
@@ -13,25 +14,18 @@ class MyMessagerie extends StatefulWidget {
 
 class _MyMessagerieState extends State<MyMessagerie> {
   final TextEditingController messageTextController = TextEditingController();
+  late Future<MyUser> futureReceiver;
 
   @override
   void initState() {
-    if (me.email == "tommytom@gmail.com") {
-      FirestoreHelper().getUser("FVahUI70KTN0tsjqBRm0JMrGmGZ2").then((value) {
-        setState(() {
-          receiver = value;
-        });
-        print("me.uid = ${me.uid}");
-        print("receiver.uid = ${receiver.uid}");
-      });
+    super.initState();
 
-      super.initState();
+    if (me.email == "tommytom@gmail.com") {
+      futureReceiver =
+          FirestoreHelper().getUser("FVahUI70KTN0tsjqBRm0JMrGmGZ2");
     } else if (me.email == "serviceiencli@gmail.com") {
-      FirestoreHelper().getUser("H6Fvg94SwqS37q90igaZCHuTUYD2").then((value) {
-        setState(() {
-          receiver = value;
-        });
-      });
+      futureReceiver =
+          FirestoreHelper().getUser("H6Fvg94SwqS37q90igaZCHuTUYD2");
     } else {
       print("cela ne fonctionne pas");
     }
@@ -39,15 +33,33 @@ class _MyMessagerieState extends State<MyMessagerie> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(receiver.firstname),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      extendBodyBehindAppBar: true,
-      body: bodyPage(),
+    return FutureBuilder<MyUser>(
+      future: futureReceiver,
+      builder: (BuildContext context, AsyncSnapshot<MyUser> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
+        if (snapshot.hasError) {
+          return Scaffold(
+              body: Center(child: Text("Une erreur s'est produite")));
+        }
+
+        receiver = snapshot.data!;
+        print("me.uid = ${me.uid}");
+        print("receiver.uid = ${receiver.uid}");
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(receiver.firstname),
+            centerTitle: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+          ),
+          extendBodyBehindAppBar: true,
+          body: bodyPage(),
+        );
+      },
     );
   }
 
@@ -122,7 +134,13 @@ class _MyMessagerieState extends State<MyMessagerie> {
                 onPressed: () {
                   String text = messageTextController.text;
                   print('Sending message: $text');
-                  FirestoreHelper().sendMessage(me.uid, receiver.uid, text);
+
+                  List<String> ids = [me.uid, receiver.uid];
+                  ids.sort();
+
+                  String chatID = ids[0] + ids[1];
+                  FirestoreHelper()
+                      .sendMessage(chatID, me.uid, receiver.uid, text);
                   messageTextController.clear();
                 },
                 icon: const Icon(Icons.send),

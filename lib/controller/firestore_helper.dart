@@ -61,6 +61,7 @@ class FirestoreHelper {
   }
 
   Future<MyUser> getUser(String uid) async {
+    print('getUser called with uid: $uid');
     DocumentSnapshot documentSnapshot = await cloudUsers.doc(uid).get();
     return MyUser.database(documentSnapshot);
   }
@@ -92,12 +93,19 @@ class FirestoreHelper {
 
   final cloudMessages = FirebaseFirestore.instance.collection('messages');
 
-  void sendMessage(String senderID, String receiverID, String text) {
+  void sendMessage(
+      String chatID, String senderID, String receiverID, String text) {
     print('Sender ID: $senderID');
     print('Receiver ID: $receiverID');
     print('Message text: $text');
 
+    List<String> ids = [senderID, receiverID];
+    ids.sort();
+
+    String chatID = ids[0] + ids[1];
+
     cloudMessages.add({
+      'chatID': chatID,
       'senderID': senderID,
       'receiverID': receiverID,
       'text': text,
@@ -106,10 +114,12 @@ class FirestoreHelper {
   }
 
   Stream<QuerySnapshot> getChatMessages(String senderUid, String receiverUid) {
+    print(
+        'getChatMessages called with senderId: $senderUid and receiverId: $receiverUid');
     return cloudMessages
-        .doc(senderUid)
-        .collection(receiverUid)
-        .orderBy('timestamp', descending: true)
+        .where('chatID',
+            whereIn: [senderUid + receiverUid, receiverUid + senderUid])
+        .orderBy('timestamp', descending: false)
         .snapshots();
   }
 }
