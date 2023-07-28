@@ -19,4 +19,4 @@ void onError(dynamic error) {
 
 FirestoreHelper firestoreHelper = FirestoreHelper();
 
-MyUser serviceClient = MyUser();
+MyUser receiver = MyUser();

@@ -31,11 +31,11 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.amber,
-        accentColor: Colors.amberAccent,
         buttonTheme: ButtonThemeData(
           buttonColor: Colors.amberAccent,
         ),
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.amber)
+            .copyWith(secondary: Colors.amberAccent),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -261,16 +261,5 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ],
         ));
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    FirestoreHelper().getUser("xrdsR43Nmdbc0oL98nY1szvGTLt2").then((value) {
-      setState(() {
-        serviceClient = value;
-      });
-    });
-    super.initState();
   }
 }

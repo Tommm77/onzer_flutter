@@ -89,4 +89,27 @@ class FirestoreHelper {
     DocumentSnapshot documentSnapshot = await cloudMusics.doc(musicId).get();
     return MyMusic.dataBase(documentSnapshot);
   }
+
+  final cloudMessages = FirebaseFirestore.instance.collection('messages');
+
+  void sendMessage(String senderID, String receiverID, String text) {
+    print('Sender ID: $senderID');
+    print('Receiver ID: $receiverID');
+    print('Message text: $text');
+
+    cloudMessages.add({
+      'senderID': senderID,
+      'receiverID': receiverID,
+      'text': text,
+      'timestamp': Timestamp.now(),
+    });
+  }
+
+  Stream<QuerySnapshot> getChatMessages(String senderUid, String receiverUid) {
+    return cloudMessages
+        .doc(senderUid)
+        .collection(receiverUid)
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
 }
