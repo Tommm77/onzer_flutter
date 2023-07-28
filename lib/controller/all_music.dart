@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/controller/animation_fav.dart';
 import 'package:flutter_application_1/controller/firestore_helper.dart';
 import 'package:flutter_application_1/global.dart';
 import 'package:flutter_application_1/model/music.dart';
@@ -45,8 +46,6 @@ class _AllMusicState extends State<AllMusic> {
         duration: const Duration(seconds: 2),
       ),
     );
-
-    setState(() {});
   }
 
   Future<bool> isFavorite(MyMusic music) async {
@@ -102,7 +101,11 @@ class _AllMusicState extends State<AllMusic> {
                         ),
                         title: Text(music.title),
                         subtitle: Text(music.artist),
-                        trailing: IconButton(
+                        trailing:  LikeAnimation(
+                          isFav: me.favory!.contains(music.uid) ? true : false,
+                          onpressed: () => addToFavorite(music),
+                        )
+                      );/*IconButton(
                           icon: Icon(
                             snapshot.data ?? false
                                 ? Icons.favorite
@@ -111,7 +114,7 @@ class _AllMusicState extends State<AllMusic> {
                           ),
                           onPressed: () => addToFavorite(music),
                         ),
-                      );
+                      );*/
                     }
                   },
                 ),

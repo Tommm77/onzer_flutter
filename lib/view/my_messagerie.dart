@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_application_1/controller/background_controller.dart';
 import 'package:flutter_application_1/controller/firestore_helper.dart';
 import 'package:flutter_application_1/global.dart';
@@ -123,8 +124,8 @@ class _MyMessagerieState extends State<MyMessagerie> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(data['text']),
-                          ),
-                        );
+                          ).animate().slide(duration: const Duration(milliseconds: 500)),
+                        ).animate().fade(duration: const Duration(milliseconds: 500));
                       },
                     );
                   },

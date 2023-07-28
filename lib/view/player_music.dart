@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_application_1/controller/firestore_helper.dart';
-import 'package:flutter_application_1/controller/fonction.dart';
 import 'package:flutter_application_1/global.dart';
 import 'package:flutter_application_1/model/music.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_application_1/model/user.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
 
 enum StatutPlayer { play, pause, stop }
 
@@ -27,6 +29,10 @@ class _MyPlayerMusicState extends State<MyPlayerMusic> {
   late AudioPlayer audioPlayer;
   late double volumeSound;
   late Duration dureeTotalMusic;
+  late ShakeEffect _shakeEffect;
+  late ScaleEffect _scaleEffect;
+  late ScaleEffect _scaleEffect2;
+  late bool _isFav;
   Duration position = Duration(seconds: 0);
 
   FirestoreHelper firestoreHelper = FirestoreHelper();
@@ -36,6 +42,34 @@ class _MyPlayerMusicState extends State<MyPlayerMusic> {
     super.initState();
     configurationPlayer();
     checkIfFavorite();
+
+    _shakeEffect = ShakeEffect(
+      curve: Curves.easeInOut,
+      delay: 0.ms,
+      duration: 400.ms,
+      hz: 8,
+      offset:  Offset(0, 0),
+      rotation: 0.262,
+    );
+
+
+    _scaleEffect = ScaleEffect(
+      curve: Curves.bounceOut,
+      delay: 200.ms,
+      duration: 500.ms,
+      begin:  Offset(1, 1),
+      end:  Offset(2, 2),
+    );
+
+    _scaleEffect2 = ScaleEffect(
+        curve: Curves.bounceOut,
+        delay: 400.ms,
+        duration: 500.ms,
+        begin:  Offset(1, 1),
+        end:  Offset(0.5, 0.5),
+    );
+
+
   }
 
   @override
@@ -294,12 +328,24 @@ class _MyPlayerMusicState extends State<MyPlayerMusic> {
                 });
               },
             ),
-            IconButton(
-              icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
-              color: isFavorite ? Colors.red : null,
-              iconSize: 30.0,
-              onPressed: addToFavorite,
-            ),
+            Animate(
+              effects: [ _shakeEffect, _scaleEffect, _scaleEffect2 ],
+              autoPlay: false,
+              target: isFavorite ? 1 : 0,
+              child: IconButton(
+                icon: FaIcon(
+                  (isFavorite) ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
+                  color: Colors.red,
+                  size: 20,
+                ),
+                onPressed: () {
+                  setState(() {
+                    isFavorite = !isFavorite;
+                    addToFavorite();
+                  });
+                },
+            )
+          ),
           ],
         ),
       ),
