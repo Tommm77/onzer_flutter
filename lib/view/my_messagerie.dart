@@ -77,77 +77,90 @@ class _MyMessagerieState extends State<MyMessagerie> {
 
   Widget MessagerieView() {
     print('Building MessagerieView');
-    return SafeArea(
-      child: Column(
-        children: [
-          Flexible(
-            flex: 2,
-            child: Container(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirestoreHelper().getChatMessages(me.uid, receiver.uid),
-                builder: (BuildContext context,
-                    AsyncSnapshot<QuerySnapshot> snapshot) {
-                  print(
-                      'StreamBuilder builder called with data: ${snapshot.data}');
-                  if (snapshot.hasError) {
-                    print('StreamBuilder error: ${snapshot.error}');
-                    return Text('Une erreur s\'est produite');
-                  }
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SafeArea(
+        child: Column(
+          children: [
+            Flexible(
+              child: Container(
+                child: StreamBuilder<QuerySnapshot>(
+                  stream:
+                      FirestoreHelper().getChatMessages(me.uid, receiver.uid),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    print(
+                        'StreamBuilder builder called with data: ${snapshot.data}');
+                    if (snapshot.hasError) {
+                      print('StreamBuilder error: ${snapshot.error}');
+                      return Text('Une erreur s\'est produite');
+                    }
 
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Text("Chargement...");
-                  }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
 
-                  return ListView(
-                    children:
-                        snapshot.data!.docs.map((DocumentSnapshot document) {
-                      Map<String, dynamic> data =
-                          document.data() as Map<String, dynamic>;
-                      print('ListTile data: $data');
-                      return ListTile(
-                        title: Text(data['text']),
-                        subtitle: Text(data['senderID'] == me.uid
-                            ? "Vous"
-                            : receiver.firstname),
-                      );
-                    }).toList(),
-                  );
-                },
-              ),
-            ),
-          ),
-          Row(
-            children: [
-              Flexible(
-                child: Container(
-                  width: double.infinity,
-                  child: TextField(
-                    controller: messageTextController,
-                    decoration: InputDecoration.collapsed(
-                        hintText: "Entrer votre message"),
-                  ),
+                    return ListView.builder(
+                      reverse: true,
+                      itemCount: snapshot.data!.docs.length,
+                      itemBuilder: (context, index) {
+                        DocumentSnapshot document = snapshot.data!.docs[index];
+                        Map<String, dynamic> data =
+                            document.data() as Map<String, dynamic>;
+                        print('ListTile data: $data');
+                        return Align(
+                          alignment: (data['senderID'] == me.uid)
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            margin: EdgeInsets.symmetric(
+                                vertical: 5, horizontal: 10),
+                            decoration: BoxDecoration(
+                              color: (data['senderID'] == me.uid)
+                                  ? Colors.blue[200]
+                                  : Colors.grey[300],
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(data['text']),
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  String text = messageTextController.text;
-                  print('Sending message: $text');
+            ),
+            Row(
+              children: [
+                Flexible(
+                  child: Container(
+                    child: TextField(
+                      controller: messageTextController,
+                      decoration: InputDecoration.collapsed(
+                          hintText: "Entrer votre message"),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    String text = messageTextController.text;
+                    print('Sending message: $text');
 
-                  List<String> ids = [me.uid, receiver.uid];
-                  ids.sort();
+                    List<String> ids = [me.uid, receiver.uid];
+                    ids.sort();
 
-                  String chatID = ids[0] + ids[1];
-                  FirestoreHelper()
-                      .sendMessage(chatID, me.uid, receiver.uid, text);
-                  messageTextController.clear();
-                },
-                icon: const Icon(Icons.send),
-              ),
-            ],
-          ),
-        ],
+                    String chatID = ids[0] + ids[1];
+                    FirestoreHelper()
+                        .sendMessage(chatID, me.uid, receiver.uid, text);
+                    messageTextController.clear();
+                  },
+                  icon: const Icon(Icons.send),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

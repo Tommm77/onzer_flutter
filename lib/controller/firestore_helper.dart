@@ -119,7 +119,7 @@ class FirestoreHelper {
     return cloudMessages
         .where('chatID',
             whereIn: [senderUid + receiverUid, receiverUid + senderUid])
-        .orderBy('timestamp', descending: false)
+        .orderBy('timestamp', descending: true)
         .snapshots();
   }
 }
